@@ -48,6 +48,32 @@ only by `*.tfvars` — no copy-pasted resource bodies (DRY).
 | Security | Optional NSGs, secure storage defaults, SSH-key VM | "Secure by default" without leaving the free tier. |
 | Flexibility | `enable_vm` / `enable_storage` toggles (`count`-gated) | A resource set to `false` is **absent** from the plan, not "present but empty"; envs stay uniform by default. |
 
+### Resource Groups vs Subscriptions for environments
+
+For this challenge each environment gets its **own Resource Group** within a
+**single subscription** (`opella-dev-eus-rg`, `opella-prod-eus-rg`). A Resource
+Group is a logical boundary that gives independent RBAC, a clear lifecycle
+(deleting the RG removes everything in the environment), and clean cost/tag
+filtering — all for free, which keeps us inside the Azure Free tier.
+
+In a **production organization I would use separate subscriptions** for Prod vs
+Non-Prod, because the subscription is the stronger boundary:
+
+- **Billing & cost** — each subscription gets its own invoice and budget, so Prod
+  spend is isolated and attributable.
+- **Quota & limits** — Azure quotas (e.g. vCPU counts) are per-subscription, so a
+  runaway Dev workload can't starve Prod of capacity.
+- **Policy & governance** — Azure Policy and RBAC assign cleanly at the
+  subscription scope, enabling different guardrails for Prod vs Dev.
+- **Blast radius & security** — a compromised or misconfigured Dev subscription
+  cannot touch Prod resources, identities, or quotas.
+
+The trade-off is operational overhead (more subscriptions to manage), so the rule
+of thumb is: **Resource Groups to separate workloads within a trust boundary,
+Subscriptions to separate trust/billing/quota boundaries.** The code here is
+subscription-agnostic — pointing an environment at a different subscription is
+just a provider/backend configuration change, no module edits.
+
 ## Usage
 
 Prerequisites: Terraform >= 1.5, Azure CLI logged in, and a storage account for

@@ -1,9 +1,10 @@
-# Terraform plan output — dev environment
-# Generated: 2026-06-27T05:34:14Z
+# Terraform plan output — prod environment
+# Generated: 2026-06-27T06:33:31Z
 # Subscription: Azure Free-tier subscription (ID redacted)
-# Command: terraform plan -var-file=dev.tfvars
-# Result: 15 to add, 0 to change, 0 to destroy
+# Command: terraform plan -var-file=prod.tfvars
+# Result: 16 to add, 0 to change, 0 to destroy
 # Note: real plan against a live Azure Free-tier subscription (local state, plan-only).
+#       16 vs dev's 15 = the extra deny-all-inbound NSG rule in prod.tfvars.
 #
 
 
@@ -25,7 +26,7 @@ Terraform will perform the following actions:
       + id                                                     = (known after apply)
       + location                                               = "eastus"
       + max_bid_price                                          = -1
-      + name                                                   = "opella-dev-eus-vm"
+      + name                                                   = "opella-prod-eus-vm"
       + network_interface_ids                                  = (known after apply)
       + os_managed_disk_id                                     = (known after apply)
       + patch_assessment_mode                                  = (known after apply)
@@ -37,11 +38,11 @@ Terraform will perform the following actions:
       + provision_vm_agent                                     = (known after apply)
       + public_ip_address                                      = (known after apply)
       + public_ip_addresses                                    = (known after apply)
-      + resource_group_name                                    = "opella-dev-eus-rg"
+      + resource_group_name                                    = "opella-prod-eus-rg"
       + size                                                   = "Standard_B1s"
       + tags                                                   = {
           + "cost_center" = "engineering"
-          + "environment" = "dev"
+          + "environment" = "prod"
           + "managed_by"  = "terraform"
           + "owner"       = "platform-team"
           + "project"     = "opella"
@@ -83,13 +84,13 @@ Terraform will perform the following actions:
       + ip_forwarding_enabled          = false
       + location                       = "eastus"
       + mac_address                    = (known after apply)
-      + name                           = "opella-dev-eus-vm-nic"
+      + name                           = "opella-prod-eus-vm-nic"
       + private_ip_address             = (known after apply)
       + private_ip_addresses           = (known after apply)
-      + resource_group_name            = "opella-dev-eus-rg"
+      + resource_group_name            = "opella-prod-eus-rg"
       + tags                           = {
           + "cost_center" = "engineering"
-          + "environment" = "dev"
+          + "environment" = "prod"
           + "managed_by"  = "terraform"
           + "owner"       = "platform-team"
           + "project"     = "opella"
@@ -112,10 +113,10 @@ Terraform will perform the following actions:
   + resource "azurerm_resource_group" "this" {
       + id       = (known after apply)
       + location = "eastus"
-      + name     = "opella-dev-eus-rg"
+      + name     = "opella-prod-eus-rg"
       + tags     = {
           + "cost_center" = "engineering"
-          + "environment" = "dev"
+          + "environment" = "prod"
           + "managed_by"  = "terraform"
           + "owner"       = "platform-team"
           + "project"     = "opella"
@@ -181,7 +182,7 @@ Terraform will perform the following actions:
       + primary_web_microsoft_host         = (known after apply)
       + public_network_access_enabled      = true
       + queue_encryption_key_type          = "Service"
-      + resource_group_name                = "opella-dev-eus-rg"
+      + resource_group_name                = "opella-prod-eus-rg"
       + secondary_access_key               = (sensitive value)
       + secondary_blob_connection_string   = (sensitive value)
       + secondary_blob_endpoint            = (known after apply)
@@ -223,7 +224,7 @@ Terraform will perform the following actions:
       + table_encryption_key_type          = "Service"
       + tags                               = {
           + "cost_center" = "engineering"
-          + "environment" = "dev"
+          + "environment" = "prod"
           + "managed_by"  = "terraform"
           + "owner"       = "platform-team"
           + "project"     = "opella"
@@ -252,7 +253,7 @@ Terraform will perform the following actions:
       + has_legal_hold                    = (known after apply)
       + id                                = (known after apply)
       + metadata                          = (known after apply)
-      + name                              = "dev-data"
+      + name                              = "prod-data"
       + resource_manager_id               = (known after apply)
       + storage_account_id                = (known after apply)
       + url                               = (known after apply)
@@ -294,11 +295,11 @@ Terraform will perform the following actions:
       + id                  = (known after apply)
       + location            = "eastus"
       + name                = "app-nsg"
-      + resource_group_name = "opella-dev-eus-rg"
+      + resource_group_name = "opella-prod-eus-rg"
       + security_rule       = (known after apply)
       + tags                = {
           + "cost_center" = "engineering"
-          + "environment" = "dev"
+          + "environment" = "prod"
           + "managed_by"  = "terraform"
           + "owner"       = "platform-team"
           + "project"     = "opella"
@@ -311,11 +312,11 @@ Terraform will perform the following actions:
       + id                  = (known after apply)
       + location            = "eastus"
       + name                = "data-nsg"
-      + resource_group_name = "opella-dev-eus-rg"
+      + resource_group_name = "opella-prod-eus-rg"
       + security_rule       = (known after apply)
       + tags                = {
           + "cost_center" = "engineering"
-          + "environment" = "dev"
+          + "environment" = "prod"
           + "managed_by"  = "terraform"
           + "owner"       = "platform-team"
           + "project"     = "opella"
@@ -334,40 +335,56 @@ Terraform will perform the following actions:
       + network_security_group_name = "app-nsg"
       + priority                    = 100
       + protocol                    = "Tcp"
-      + resource_group_name         = "opella-dev-eus-rg"
+      + resource_group_name         = "opella-prod-eus-rg"
       + source_address_prefix       = "VirtualNetwork"
+      + source_port_range           = "*"
+    }
+
+  # module.stack.module.vnet.azurerm_network_security_rule.this["app|deny-all-inbound"] will be created
+  + resource "azurerm_network_security_rule" "this" {
+      + access                      = "Deny"
+      + destination_address_prefix  = "*"
+      + destination_port_range      = "*"
+      + direction                   = "Inbound"
+      + id                          = (known after apply)
+      + name                        = "deny-all-inbound"
+      + network_security_group_name = "app-nsg"
+      + priority                    = 4096
+      + protocol                    = "*"
+      + resource_group_name         = "opella-prod-eus-rg"
+      + source_address_prefix       = "*"
       + source_port_range           = "*"
     }
 
   # module.stack.module.vnet.azurerm_subnet.this["app"] will be created
   + resource "azurerm_subnet" "this" {
       + address_prefixes                              = [
-          + "10.10.1.0/24",
+          + "10.20.1.0/24",
         ]
       + default_outbound_access_enabled               = true
       + id                                            = (known after apply)
       + name                                          = "app"
       + private_endpoint_network_policies             = "Disabled"
       + private_link_service_network_policies_enabled = true
-      + resource_group_name                           = "opella-dev-eus-rg"
-      + virtual_network_name                          = "opella-dev-eus-vnet"
+      + resource_group_name                           = "opella-prod-eus-rg"
+      + virtual_network_name                          = "opella-prod-eus-vnet"
     }
 
   # module.stack.module.vnet.azurerm_subnet.this["data"] will be created
   + resource "azurerm_subnet" "this" {
       + address_prefixes                              = [
-          + "10.10.2.0/24",
+          + "10.20.2.0/24",
         ]
       + default_outbound_access_enabled               = true
       + id                                            = (known after apply)
       + name                                          = "data"
       + private_endpoint_network_policies             = "Disabled"
       + private_link_service_network_policies_enabled = true
-      + resource_group_name                           = "opella-dev-eus-rg"
+      + resource_group_name                           = "opella-prod-eus-rg"
       + service_endpoints                             = [
           + "Microsoft.Storage",
         ]
-      + virtual_network_name                          = "opella-dev-eus-vnet"
+      + virtual_network_name                          = "opella-prod-eus-vnet"
     }
 
   # module.stack.module.vnet.azurerm_subnet_network_security_group_association.this["app"] will be created
@@ -387,19 +404,19 @@ Terraform will perform the following actions:
   # module.stack.module.vnet.azurerm_virtual_network.this will be created
   + resource "azurerm_virtual_network" "this" {
       + address_space                  = [
-          + "10.10.0.0/16",
+          + "10.20.0.0/16",
         ]
       + dns_servers                    = []
       + guid                           = (known after apply)
       + id                             = (known after apply)
       + location                       = "eastus"
-      + name                           = "opella-dev-eus-vnet"
+      + name                           = "opella-prod-eus-vnet"
       + private_endpoint_vnet_policies = "Disabled"
-      + resource_group_name            = "opella-dev-eus-rg"
+      + resource_group_name            = "opella-prod-eus-rg"
       + subnet                         = (known after apply)
       + tags                           = {
           + "cost_center" = "engineering"
-          + "environment" = "dev"
+          + "environment" = "prod"
           + "managed_by"  = "terraform"
           + "owner"       = "platform-team"
           + "project"     = "opella"
@@ -407,16 +424,16 @@ Terraform will perform the following actions:
         }
     }
 
-Plan: 15 to add, 0 to change, 0 to destroy.
+Plan: 16 to add, 0 to change, 0 to destroy.
 
 Changes to Outputs:
-  + resource_group_name  = "opella-dev-eus-rg"
+  + resource_group_name  = "opella-prod-eus-rg"
   + storage_account_name = (known after apply)
   + subnet_ids           = {
       + app  = (known after apply)
       + data = (known after apply)
     }
-  + vm_name              = "opella-dev-eus-vm"
+  + vm_name              = "opella-prod-eus-vm"
   + vm_private_ip        = (known after apply)
   + vnet_id              = (known after apply)
 
