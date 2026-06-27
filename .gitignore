@@ -1,0 +1,33 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfplan
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+.terraformrc
+terraform.rc
+
+# NOTE: .terraform.lock.hcl IS intentionally committed (reproducible provider
+# versions). Do not ignore it.
+
+# Secrets / local var files (commit example tfvars only, not real secrets)
+*.auto.tfvars
+secrets.tfvars
+*.pem
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+
+# Local-only working notes (not part of the published deliverable)
+/REQUIREMENTS.md
+/docs/RUNBOOK.md
+/docs/WALKTHROUGH.md
+/docs/ARCHITECTURE_EVOLUTION.md
+/docs/INTERVIEW_PREP.md
