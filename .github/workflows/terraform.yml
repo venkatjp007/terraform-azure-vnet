@@ -60,11 +60,38 @@ jobs:
         run: terraform -chdir=modules/vnet test
 
   # ---------------------------------------------------------------------------
+  # Preflight: detect whether Azure credentials are configured as repo secrets.
+  # If not, the plan/apply jobs are skipped (not failed) so the pipeline stays
+  # green on repos without cloud access. The captured docs/plan-dev.txt serves
+  # as the plan evidence in that case.
+  # ---------------------------------------------------------------------------
+  preflight:
+    name: Preflight (Azure configured?)
+    needs: validate
+    runs-on: ubuntu-latest
+    outputs:
+      azure_configured: ${{ steps.check.outputs.configured }}
+    steps:
+      - id: check
+        env:
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        run: |
+          if [ -n "$AZURE_CLIENT_ID" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "Azure credentials present — plan/apply will run."
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "No Azure credentials — plan/apply will be skipped."
+          fi
+
+  # ---------------------------------------------------------------------------
   # Plan: runs against Azure (OIDC). Posts plan output to the PR.
+  # Skipped when Azure is not configured (see preflight).
   # ---------------------------------------------------------------------------
   plan:
     name: Plan (${{ matrix.environment }})
-    needs: validate
+    needs: [validate, preflight]
+    if: needs.preflight.outputs.azure_configured == 'true'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -108,8 +135,10 @@ jobs:
   # ---------------------------------------------------------------------------
   apply:
     name: Apply (${{ matrix.environment }})
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: plan
+    needs: [preflight, plan]
+    if: |
+      needs.preflight.outputs.azure_configured == 'true' &&
+      github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     strategy:
       matrix:
